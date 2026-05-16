@@ -15,14 +15,14 @@
     <p class="date-time" id="dateTime"></p>
   </header>
 
-  <main>
+  <main role="main">
     <!-- Search bar -->
-    <div class="search-wrap">
+    <div class="search-wrap" role="search" aria-label="City search">
       <div class="search">
         <span class="search-icon">🔍</span>
-        <input type="text" id="cityInput" placeholder="Search city — e.g. Mumbai, London..." autocomplete="off"/>
-        <button id="geoBtn" class="geo-btn" title="Use my location">📍</button>
-        <button id="searchBtn" class="search-btn">Search</button>
+        <input type="text" id="cityInput" placeholder="Search city — e.g. Mumbai, London..." autocomplete="off" aria-label="Enter city name"/>
+        <button id="geoBtn" class="geo-btn" title="Use my location" aria-label="Use my location" type="button">📍</button>
+        <button id="searchBtn" class="search-btn" type="button">Search</button>
       </div>
       <!-- Quick city chips -->
       <div class="chips">
@@ -36,14 +36,14 @@
 
     <!-- Unit toggle -->
     <div class="unit-wrap">
-      <button id="unitToggle" class="unit-btn">°C / °F</button>
+      <button id="unitToggle" class="unit-btn" type="button" aria-label="Toggle temperature unit">°C / °F</button>
     </div>
 
     <!-- Loading -->
-    <div class="spinner" id="spinner"></div>
+    <div class="spinner" id="spinner" role="status" aria-label="Loading weather data"></div>
 
     <!-- Error -->
-    <div class="error-msg" id="errorMsg"></div>
+    <div class="error-msg" id="errorMsg" role="alert" aria-live="assertive"></div>
 
     <!-- Welcome state -->
     <div class="welcome" id="welcome">
@@ -52,7 +52,7 @@
     </div>
 
     <!-- Current weather card -->
-    <div class="card" id="currentCard">
+    <div class="card" id="currentCard" aria-live="polite" aria-atomic="true">
       <div class="current-top">
         <div>
           <div class="city-name" id="cityName"></div>
@@ -142,6 +142,16 @@
   <footer class="footer">
     Built with Node.js &amp; OpenWeatherMap &bull; Sky Watch
   </footer>
+
+  <div class="modal-overlay" id="hourlyModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">24-Hour Forecast</span>
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close hourly forecast">✕</button>
+      </div>
+      <div class="hourly-list" id="hourlyList"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

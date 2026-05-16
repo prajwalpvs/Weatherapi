@@ -6,9 +6,10 @@ const API_KEY = process.env.OPENWEATHER_API_KEY;
 const isMock = !API_KEY || API_KEY === 'your_api_key_here';
 
 function mockCurrent(label = 'Mumbai') {
+  const now = Math.floor(Date.now() / 1000);
   return {
     name: label,
-    sys: { country: 'IN' },
+    sys: { country: 'IN', sunrise: now - 21600, sunset: now + 21600 },
     main: { temp: 28.4, feels_like: 31.2, humidity: 72, pressure: 1012, temp_min: 26, temp_max: 31 },
     weather: [{ main: 'Clouds', description: 'partly cloudy', icon: '02d' }],
     wind: { speed: 4.2 },
@@ -38,7 +39,7 @@ async function getCurrentWeather({ city, lat, lon }) {
     const response = await axios.get(`${BASE_URL}/weather`, { params });
     return response.data;
   } catch (err) {
-    if (err.response?.status === 401) return mockCurrent(city);
+    if (err.response?.status === 401) throw new Error('Invalid OpenWeatherMap API key');
     throw err;
   }
 }
@@ -52,7 +53,7 @@ async function getForecast({ city, lat, lon }) {
     const response = await axios.get(`${BASE_URL}/forecast`, { params });
     return response.data;
   } catch (err) {
-    if (err.response?.status === 401) return mockForecast(city);
+    if (err.response?.status === 401) throw new Error('Invalid OpenWeatherMap API key');
     throw err;
   }
 }
