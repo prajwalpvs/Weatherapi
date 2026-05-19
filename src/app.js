@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet  = require('helmet');
 const rateLimit = require('express-rate-limit');
 const weatherRoutes = require('./routes/weatherRoutes');
 const errorHandler = require('./middleware/errorHandler');
@@ -7,6 +8,7 @@ const errorHandler = require('./middleware/errorHandler');
 const path = require('path');
 
 const app = express();
+app.use(helmet());
 
 const weatherLimiter = rateLimit({
   windowMs: 60 * 1000,

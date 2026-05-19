@@ -1,4 +1,10 @@
 let unit = 'C';
+let lastData = null;
+
+const LOCALE           = 'en-IN';
+const FORECAST_PREVIEW = 5;
+const FORECAST_HOURLY  = 8;
+const CONDITION_ALIAS  = { Fog: 'Mist', Haze: 'Mist', Smoke: 'Mist', Dust: 'Mist', Tornado: 'Thunderstorm' };
 
 const THEMES = {
   Clear: {
@@ -128,14 +134,11 @@ function getTimeOfDay() {
 }
 
 function icon(main) {
-  const alias = { Fog: 'Mist', Haze: 'Mist', Smoke: 'Mist', Dust: 'Mist', Tornado: 'Thunderstorm' };
-  return ICONS[alias[main] || main] || ICONS.Mist;
+  return ICONS[CONDITION_ALIAS[main] || main] || ICONS.Mist;
 }
 
 function setTheme(main) {
-  const alias = { Fog: 'Mist', Haze: 'Mist', Smoke: 'Mist', Dust: 'Mist', Tornado: 'Thunderstorm' };
-  const key = alias[main] || main;
-  const [a, b, c] = (THEMES[key] || THEMES.Mist)[getTimeOfDay()];
+  const [a, b, c] = (THEMES[CONDITION_ALIAS[main] || main] || THEMES.Mist)[getTimeOfDay()];
   const root = document.documentElement;
   root.style.setProperty('--bg1', a);
   root.style.setProperty('--bg2', b);
@@ -146,7 +149,7 @@ function toF(c) { return Math.round(c * 9 / 5 + 32); }
 function fmt(c) { return unit === 'C' ? `${Math.round(c)}°C` : `${toF(c)}°F`; }
 function fmtBig(c) { return unit === 'C' ? `${Math.round(c)}°` : `${toF(c)}°`; }
 function fmtTime(unix) {
-  return new Date(unix * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  return new Date(unix * 1000).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
 }
 function windDir(deg) {
   if (deg === undefined) return '';
@@ -156,7 +159,7 @@ function windDir(deg) {
 
 // Clock
 function updateClock() {
-  document.getElementById('dateTime').textContent = new Date().toLocaleString('en-IN', {
+  document.getElementById('dateTime').textContent = new Date().toLocaleString(LOCALE, {
     weekday: 'long', year: 'numeric', month: 'long',
     day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
@@ -167,9 +170,8 @@ setInterval(updateClock, 1000);
 // Unit toggle
 document.getElementById('unitToggle').addEventListener('click', () => {
   unit = unit === 'C' ? 'F' : 'C';
-  document.getElementById('unitToggle').textContent = unit === 'C' ? '°C / °F' : '°F / °C';
-  const cached = window._lastData;
-  if (cached) renderCurrent(cached.current, cached.forecast);
+  document.getElementById('unitToggle').textContent = unit === 'C' ? 'Switch to °F' : 'Switch to °C';
+  if (lastData) renderCurrent(lastData.current, lastData.forecast);
 });
 
 // Search triggers
@@ -190,8 +192,9 @@ document.getElementById('geoBtn').addEventListener('click', () => {
           fetch(`/api/weather/current?lat=${lat}&lon=${lon}`).then(r => r.json()),
           fetch(`/api/weather/forecast?lat=${lat}&lon=${lon}`).then(r => r.json()),
         ]);
-        if (current.error) throw new Error(current.error);
-        window._lastData = { current, forecast };
+        if (current.error)  throw new Error(current.error);
+        if (forecast.error) throw new Error(forecast.error);
+        lastData = { current, forecast };
         renderCurrent(current, forecast);
       } catch (err) {
         showError(err.message || 'Could not get weather for your location.');
@@ -217,6 +220,7 @@ document.querySelectorAll('.chip').forEach(chip => {
 async function search() {
   const city = document.getElementById('cityInput').value.trim();
   if (!city) return;
+  if (city.length > 100) return showError('City name too long.');
 
   setLoading(true);
   hideError();
@@ -229,8 +233,9 @@ async function search() {
       fetch(`/api/weather/current?city=${encodeURIComponent(city)}`).then(r => r.json()),
       fetch(`/api/weather/forecast?city=${encodeURIComponent(city)}`).then(r => r.json()),
     ]);
-    if (current.error) throw new Error(current.error);
-    window._lastData = { current, forecast };
+    if (current.error)  throw new Error(current.error);
+    if (forecast.error) throw new Error(forecast.error);
+    lastData = { current, forecast };
     renderCurrent(current, forecast);
   } catch (err) {
     showError(err.message || 'Could not fetch weather. Try again.');
@@ -259,9 +264,9 @@ function renderCurrent(current, forecast) {
   set('sunrise', current.sys.sunrise ? fmtTime(current.sys.sunrise) : 'N/A');
   set('sunset', current.sys.sunset ? fmtTime(current.sys.sunset) : 'N/A');
 
-  document.getElementById('forecastList').innerHTML = forecast.list.slice(0, 5).map((item, i) => {
+  document.getElementById('forecastList').innerHTML = forecast.list.slice(0, FORECAST_PREVIEW).map((item, i) => {
     const t = new Date(item.dt_txt);
-    const timeStr = t.toLocaleString('en-IN', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+    const timeStr = t.toLocaleString(LOCALE, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     return `
       <div class="forecast-item" role="button" tabindex="0"
            aria-label="${esc(timeStr)}: ${esc(item.weather[0].description)}, ${esc(fmt(item.main.temp))}"
@@ -276,6 +281,7 @@ function renderCurrent(current, forecast) {
         <div class="forecast-right">
           <div class="forecast-temp">${esc(fmt(item.main.temp))}</div>
           <div class="forecast-humidity">💧 ${esc(String(item.main.humidity))}%</div>
+          <div class="forecast-chevron" aria-hidden="true">›</div>
         </div>
       </div>`;
   }).join('');
@@ -292,9 +298,9 @@ function renderCurrent(current, forecast) {
 }
 
 function openHourlyModal(forecast) {
-  document.getElementById('hourlyList').innerHTML = forecast.list.slice(0, 8).map(item => {
+  document.getElementById('hourlyList').innerHTML = forecast.list.slice(0, FORECAST_HOURLY).map(item => {
     const t = new Date(item.dt_txt);
-    const timeStr = t.toLocaleString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const timeStr = t.toLocaleString(LOCALE, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     return `
       <div class="hourly-item">
         <div class="hourly-icon">${icon(item.weather[0].main)}</div>
@@ -305,16 +311,37 @@ function openHourlyModal(forecast) {
         </div>
         <div>
           <div class="hourly-temp">${esc(fmt(item.main.temp))}</div>
-          <div class="hourly-wind">FL ${esc(fmt(item.main.feels_like))}</div>
+          <div class="hourly-wind">Feels ${esc(fmt(item.main.feels_like))}</div>
         </div>
       </div>`;
   }).join('');
-  document.getElementById('hourlyModal').classList.add('open');
-  document.getElementById('modalClose').focus();
+
+  const modal = document.getElementById('hourlyModal');
+  modal.classList.add('open');
+
+  const focusable = modal.querySelectorAll('button, [tabindex="0"]');
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+  function trapFocus(e) {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
+  }
+  modal._trapFocus = trapFocus;
+  modal.addEventListener('keydown', trapFocus);
+  first.focus();
 }
 
 function closeModal() {
-  document.getElementById('hourlyModal').classList.remove('open');
+  const modal = document.getElementById('hourlyModal');
+  if (modal._trapFocus) {
+    modal.removeEventListener('keydown', modal._trapFocus);
+    modal._trapFocus = null;
+  }
+  modal.classList.remove('open');
 }
 
 document.getElementById('modalClose').addEventListener('click', closeModal);

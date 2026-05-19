@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Real-time weather app — search any city worldwide."/>
   <title>Sky Watch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -19,18 +21,18 @@
     <!-- Search bar -->
     <div class="search-wrap" role="search" aria-label="City search">
       <div class="search">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="cityInput" placeholder="Search city — e.g. Mumbai, London..." autocomplete="off" aria-label="Enter city name"/>
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" id="cityInput" placeholder="Search city — e.g. Mumbai, London..." autocomplete="off" aria-label="Enter city name" autofocus/>
         <button id="geoBtn" class="geo-btn" title="Use my location" aria-label="Use my location" type="button">📍</button>
         <button id="searchBtn" class="search-btn" type="button">Search</button>
       </div>
       <!-- Quick city chips -->
       <div class="chips">
-        <button class="chip" data-city="Mumbai">Mumbai</button>
-        <button class="chip" data-city="London">London</button>
-        <button class="chip" data-city="New York">New York</button>
-        <button class="chip" data-city="Tokyo">Tokyo</button>
-        <button class="chip" data-city="Sydney">Sydney</button>
+        <button class="chip" data-city="Mumbai"   type="button">Mumbai</button>
+        <button class="chip" data-city="London"   type="button">London</button>
+        <button class="chip" data-city="New York" type="button">New York</button>
+        <button class="chip" data-city="Tokyo"    type="button">Tokyo</button>
+        <button class="chip" data-city="Sydney"   type="button">Sydney</button>
       </div>
     </div>
 
@@ -47,7 +49,7 @@
 
     <!-- Welcome state -->
     <div class="welcome" id="welcome">
-      <div class="welcome-icon">🌍</div>
+      <div class="welcome-icon" aria-hidden="true">🌍</div>
       <p class="welcome-text">Search a city or use your location<br/>to get live weather data.</p>
     </div>
 
@@ -74,56 +76,56 @@
 
       <div class="stats-grid">
         <div class="stat">
-          <span class="stat-icon">🤔</span>
+          <span class="stat-icon" aria-hidden="true">🤔</span>
           <div>
             <div class="stat-label">Feels Like</div>
             <div class="stat-value" id="feelsLike"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">💧</span>
+          <span class="stat-icon" aria-hidden="true">💧</span>
           <div>
             <div class="stat-label">Humidity</div>
             <div class="stat-value" id="humidity"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">💨</span>
+          <span class="stat-icon" aria-hidden="true">💨</span>
           <div>
             <div class="stat-label">Wind</div>
             <div class="stat-value" id="wind"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">🌡️</span>
+          <span class="stat-icon" aria-hidden="true">🌡️</span>
           <div>
             <div class="stat-label">Pressure</div>
             <div class="stat-value" id="pressure"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">👁️</span>
+          <span class="stat-icon" aria-hidden="true">👁️</span>
           <div>
             <div class="stat-label">Visibility</div>
             <div class="stat-value" id="visibility"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">☁️</span>
+          <span class="stat-icon" aria-hidden="true">☁️</span>
           <div>
             <div class="stat-label">Condition</div>
             <div class="stat-value" id="condition"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">🌅</span>
+          <span class="stat-icon" aria-hidden="true">🌅</span>
           <div>
             <div class="stat-label">Sunrise</div>
             <div class="stat-value" id="sunrise"></div>
           </div>
         </div>
         <div class="stat">
-          <span class="stat-icon">🌇</span>
+          <span class="stat-icon" aria-hidden="true">🌇</span>
           <div>
             <div class="stat-label">Sunset</div>
             <div class="stat-value" id="sunset"></div>
@@ -134,7 +136,7 @@
 
     <!-- Forecast card -->
     <div class="card" id="forecastCard">
-      <div class="section-title">Next 15 Hours</div>
+      <h2 class="section-title">Next 15 Hours — tap for detail</h2>
       <div class="forecast-list" id="forecastList"></div>
     </div>
   </main>
